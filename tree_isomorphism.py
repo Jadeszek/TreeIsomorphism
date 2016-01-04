@@ -4,6 +4,8 @@
  What is the complexity of the algorithm?
  Give a short overview about the general graph isomorphism problem.
 """
+import unittest
+from queue import Queue
 
 from IPython.display import display
 from graphviz import Source
@@ -64,7 +66,13 @@ class RootedTree:
     def get_size(self):
         return self.get_order() - 1
 
-    def get_dot_string(self, graph_name="Tree"):
+    def get_dot_string(self, graph_name="Tree", labeled=False):
+
+        def get_labels(t):
+            labels = ""
+            for node in t.get_nodes():
+                labels += "\t" + node + "\t[xlabel=\"" + str(t.label(node)) + "\"];\n"
+            return labels
 
         def get_edges(node, t):
             edges = ""
@@ -74,17 +82,17 @@ class RootedTree:
                 edges += get_edges(son, t)
             return edges
 
-        return "graph " + graph_name + " { \n" + get_edges(self.get_root(), self) + " } "
+        return "graph " + graph_name + " { \n forcelabels=true; \n" + get_labels(self) + get_edges(self.get_root(),
+                                                                                                   self) + " } "
 
-    def render(self):
-        dot = self.get_dot_string()
-        print(dot)
+    def render(self, labeled=False):
+        dot = self.get_dot_string(labeled=labeled)
+        # print(dot)
         src = Source(dot)
         display(src)
 
     def dfs(self, fun):
         visited = {node: False for node in self.get_nodes()}
-        print(visited)
 
         def _dfs(node, node_function):
             visited[node] = True
@@ -95,22 +103,40 @@ class RootedTree:
 
         _dfs(self.get_root(), fun)
 
-    def label(self, node):
+    def bfs(self, fun):
+        visited = {node: False for node in self.get_nodes()}
+        root = self.get_root()
+        q = Queue()
+        fun(root)
+        q.put(root)
+        while not q.empty():
+            node = q.get()
+            for v in self.get_sons(node):
+                if not visited[v]:
+                    visited[v] = True
+                    fun(v)
+                    q.put(v)
+
+    def label(self, node=None):
+        if node is None:
+            node = self.get_root()
         sons = list(self.get_sons(node))
         number = len(sons)
-        label = [number]
+        labels = []
         while sons:
             # backup and remove first vertex from sons
             vertex = sons.pop(0)
-            label = self.label(vertex) + label
+            labels.append(self.label(vertex))
 
-        return [number] + sorted(label)
+        label = [[number]] + sorted(labels)
+
+        return [item for sublist in label for item in sublist]
 
     def print_labels(self):
         def fun(node):
             print(node, "\thas label ", self.label(node))
 
-        self.dfs(fun)
+        self.bfs(fun)
 
 
 def ordered_rooted_tree_iso(t1, t2):
@@ -149,8 +175,8 @@ def ordered_rooted_tree_iso(t1, t2):
     return True
 
 
-import unittest
-
+def rooted_tree_iso(t1, t2):
+    return t1.label() == t2.label()
 
 class RotatedTreeTest(unittest.TestCase):
     def setUp(self):
@@ -180,7 +206,6 @@ class IsomorphismAlgorithmTest(unittest.TestCase):
             'A': ['AX', 'AY'],
             'B': ['BX', 'BY', 'BZ'],
             'BZ': ['1', '2', '3', '4', '5', '6']
-
         })
 
         iso = RootedTree('r', {
@@ -188,7 +213,39 @@ class IsomorphismAlgorithmTest(unittest.TestCase):
             'L': ['LL', 'LR'],
             'R': ['RL', 'RM', 'RR'],
             'RR': ['a', 'b', 'c', 'd', 'e', 's']
+        })
 
+        noniso_size = RootedTree('r', {
+            'r': ['L', 'C', 'R'],
+            'L': ['LL', 'LR'],
+            'R': ['RL', 'RM', 'RR'],
+            'RR': ['a', 'b', 'c', 'd', 'e', 's']
+        })
+
+        noniso_order = RootedTree('r', {
+            'r': ['L', 'R'],
+            'L': ['LL', 'LR'],
+            'R': ['RL', 'RM', 'RR'],
+            'RM': ['a', 'b', 'c', 'd', 'e', 's']
+        })
+
+        self.assertTrue(ordered_rooted_tree_iso(test, iso))
+        self.assertFalse(ordered_rooted_tree_iso(test, noniso_size))
+        self.assertFalse(ordered_rooted_tree_iso(test, noniso_order))
+
+    def testRootedTreeIsomorphism(self):
+        test = RootedTree('R', {
+            'R': ['A', 'B'],
+            'A': ['AX', 'AY'],
+            'B': ['BX', 'BY', 'BZ'],
+            'BZ': ['1', '2', '3', '4', '5', '6']
+        })
+
+        iso = RootedTree('r', {
+            'r': ['L', 'R'],
+            'L': ['LL', 'LR'],
+            'R': ['RL', 'RM', 'RR'],
+            'RL': ['a', 'b', 'c', 'd', 'e', 's']
         })
 
         noniso = RootedTree('r', {
@@ -196,23 +253,49 @@ class IsomorphismAlgorithmTest(unittest.TestCase):
             'L': ['LL', 'LR'],
             'R': ['RL', 'RM', 'RR'],
             'RR': ['a', 'b', 'c', 'd', 'e', 's']
-
         })
 
-        self.assertTrue(ordered_rooted_tree_iso(test, iso))
-        self.assertFalse(ordered_rooted_tree_iso(test, noniso))
+        self.assertEqual(test.label(), iso.label())
+        self.assertFalse(rooted_tree_iso(test, noniso))
+
 
 
 if __name__ == "__main__":
-    # unittest.main(exit=False)
+    unittest.main(exit=False)
 
-    test = RootedTree('r', {
-        'r': ['L', 'R'],
-        'L': ['l1', 'l2', 'l3'],
-        'R': ['r1', 'r2', 'r3'],
-        'r2': ['a', 'b'],
-        'r3': ['c', 'd']
+    # y = [1,[2],3]
+    # x = [[item] if isinstance(item, int) else item for item in y]
+    # print(x)
+    # print( isinstance([1], int) )
+    #
+    # exit()
+
+    # test = RootedTree('r', {
+    #     'r': ['L', 'R'],
+    #     'L': ['l1', 'l2', 'l3'],
+    #     'R': ['r1', 'r2', 'r3'],
+    #     'r2': ['a', 'b'],
+    #     'r3': ['c', 'd']
+    # })
+
+    test = RootedTree('R', {
+        'R': ['A', 'c', 'B'],
+        'A': ['AX', 'AY'],
+        'B': ['BX', 'BY', 'BZ'],
+        'BZ': ['1', '2', '3', '4', '5', '6']
+    })
+
+    iso = RootedTree('r', {
+        'r': ['L', 'C', 'R'],
+        'L': ['LL', 'LR'],
+        'R': ['RL', 'RM', 'RR'],
+        'RL': ['a', 'b', 'c', 'd', 'e', 's']
     })
 
     test.render()
-    test.print_labels()
+    iso.render()
+    print('test', test.label())
+    print('iso', iso.label())
+
+    test.render(labeled=True)
+    iso.render(labeled=True)
