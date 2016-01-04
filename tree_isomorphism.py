@@ -95,9 +95,26 @@ class RootedTree:
 
         _dfs(self.get_root(), fun)
 
+    def label(self, node):
+        sons = list(self.get_sons(node))
+        number = len(sons)
+        label = [number]
+        while sons:
+            # backup and remove first vertex from sons
+            vertex = sons.pop(0)
+            label = self.label(vertex) + label
+
+        return [number] + sorted(label)
+
+    def print_labels(self):
+        def fun(node):
+            print(node, "\thas label ", self.label(node))
+
+        self.dfs(fun)
+
 
 def ordered_rooted_tree_iso(t1, t2):
-    if t1.get_size() != t1.get_size():
+    if t1.get_size() != t2.get_size():
         return False
 
     def get_node_number_mapping(t):
@@ -132,21 +149,70 @@ def ordered_rooted_tree_iso(t1, t2):
     return True
 
 
+import unittest
+
+
+class RotatedTreeTest(unittest.TestCase):
+    def setUp(self):
+        self.testTree = RootedTree('ROOT', {
+            'ROOT': ['L', 'L'],
+            'L': ['LL', 'LR'],
+            'R': ['RL', 'RM', 'RR'],
+        })
+
+    def tearDown(self):
+        del self.testTree
+
+    def test_get_root(self):
+        self.assertEqual(self.testTree.get_root(), 'ROOT')
+
+    def test_get_order(self):
+        self.assertEqual(self.testTree.get_order(), 8)
+
+    def test_get_size(self):
+        self.assertEqual(self.testTree.get_size(), 7)
+
+
+class IsomorphismAlgorithmTest(unittest.TestCase):
+    def testOrderedRootedTreeIsomorphism(self):
+        test = RootedTree('R', {
+            'R': ['A', 'B'],
+            'A': ['AX', 'AY'],
+            'B': ['BX', 'BY', 'BZ'],
+            'BZ': ['1', '2', '3', '4', '5', '6']
+
+        })
+
+        iso = RootedTree('r', {
+            'r': ['L', 'R'],
+            'L': ['LL', 'LR'],
+            'R': ['RL', 'RM', 'RR'],
+            'RR': ['a', 'b', 'c', 'd', 'e', 's']
+
+        })
+
+        noniso = RootedTree('r', {
+            'r': ['L', 'C', 'R'],
+            'L': ['LL', 'LR'],
+            'R': ['RL', 'RM', 'RR'],
+            'RR': ['a', 'b', 'c', 'd', 'e', 's']
+
+        })
+
+        self.assertTrue(ordered_rooted_tree_iso(test, iso))
+        self.assertFalse(ordered_rooted_tree_iso(test, noniso))
+
+
 if __name__ == "__main__":
-    t1 = RootedTree('R', {
-        'R': ['A', 'B'],
-        'A': ['AX', 'AY'],
-        'B': ['BX', 'BY', 'BZ'],
-        'BZ': ['1', '2', '3', '4', '5', '6']
+    # unittest.main(exit=False)
 
-    })
-
-    t2 = RootedTree('r', {
+    test = RootedTree('r', {
         'r': ['L', 'R'],
-        'L': ['LL', 'LR'],
-        'R': ['RL', 'RM', 'RR'],
-        'RR': ['a', 'b', 'c', 'd', 'e', 's']
-
+        'L': ['l1', 'l2', 'l3'],
+        'R': ['r1', 'r2', 'r3'],
+        'r2': ['a', 'b'],
+        'r3': ['c', 'd']
     })
 
-    print(ordered_rooted_tree_iso(t1, t2))
+    test.render()
+    test.print_labels()
