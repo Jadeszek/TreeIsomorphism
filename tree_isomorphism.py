@@ -71,7 +71,7 @@ class RootedTree:
         def get_labels(t):
             labels = ""
             for node in t.get_nodes():
-                labels += "\t" + node + "\t[xlabel=\"" + str(t.label(node)) + "\"];\n"
+                labels += "\t" + node + "\t[label=\"" + node + "\\n" + str(t.label(node)) + "\"];\n"
             return labels
 
         def get_edges(node, t):
@@ -261,7 +261,7 @@ class IsomorphismAlgorithmTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main(exit=False)
+    # unittest.main(exit=False)
 
     # y = [1,[2],3]
     # x = [[item] if isinstance(item, int) else item for item in y]
