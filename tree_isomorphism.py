@@ -35,6 +35,7 @@ class RootedTree:
         return len(self.get_sons(v)) == 0
 
     def is_last_son(self, v):
+        """Method for ordered rooted trees, returns true if selected vertex is last son of his father"""
         if v == self.root:
             return True
         sons = self.get_sons(self.get_father(v))
@@ -44,11 +45,13 @@ class RootedTree:
         return False
 
     def first(self, v):
+        """Returns value of 'first' operator for vertex """
         if not self.is_leaf(v):
             return self.get_sons(v)[0]
         raise IndexError("first of leaf cannot be read")
 
     def next(self, v):
+        """Returns value of 'next' operator for vertex """
         if self.is_last_son(v):
             raise IndexError("next of last son cannot be read")
         sons = self.get_sons(self.get_father(v))
@@ -67,7 +70,7 @@ class RootedTree:
         return self.get_order() - 1
 
     def get_dot_string(self, graph_name="Tree", labeled=False):
-
+        """Converts graph into DOT's language string with selected name and optionally - with labels"""
         def get_labels(t):
             labels = ""
             for node in t.get_nodes():
@@ -82,16 +85,19 @@ class RootedTree:
                 edges += get_edges(son, t)
             return edges
 
-        return "graph " + graph_name + " { \n forcelabels=true; \n" + get_labels(self) + get_edges(self.get_root(),
-                                                                                                   self) + " } "
+        return "graph " + graph_name + " { \n forcelabels=true; \n" + \
+               (get_labels(self) if labeled else '') + \
+               get_edges(self.get_root(), self) + \
+               "\tlabelloc=\"t\"; \n\tlabel=\"" + graph_name + "\"; \n } "
 
-    def render(self, labeled=False):
-        dot = self.get_dot_string(labeled=labeled)
-        # print(dot)
+    def render(self, title="Tree", labeled=False):
+        """Draws graph into iPython environment"""
+        dot = self.get_dot_string(labeled=labeled, graph_name=title)
         src = Source(dot)
         display(src)
 
     def dfs(self, fun):
+        """Call argument function for all nodes in DFS order"""
         visited = {node: False for node in self.get_nodes()}
 
         def _dfs(node, node_function):
@@ -104,6 +110,7 @@ class RootedTree:
         _dfs(self.get_root(), fun)
 
     def bfs(self, fun):
+        """Call argument function for all nodes in BFS order"""
         visited = {node: False for node in self.get_nodes()}
         root = self.get_root()
         q = Queue()
@@ -118,6 +125,7 @@ class RootedTree:
                     q.put(v)
 
     def label(self, node=None):
+        """Returns unique code for selected node or for root, when no args"""
         if node is None:
             node = self.get_root()
         sons = list(self.get_sons(node))
@@ -130,7 +138,7 @@ class RootedTree:
 
         label = [[number]] + sorted(labels)
 
-        return [item for sublist in label for item in sublist]
+        return [item for sub_list in label for item in sub_list]
 
     def print_labels(self):
         def fun(node):
@@ -140,6 +148,7 @@ class RootedTree:
 
 
 def ordered_rooted_tree_iso(t1, t2):
+    """Checks if two ordered rooted trees are isomorphic"""
     if t1.get_size() != t2.get_size():
         return False
 
@@ -158,6 +167,7 @@ def ordered_rooted_tree_iso(t1, t2):
             mapping[node] = next(gen)
 
         t.dfs(labeler)
+
         return mapping
 
     node_1_to_number = get_node_number_mapping(t1)
@@ -176,9 +186,14 @@ def ordered_rooted_tree_iso(t1, t2):
 
 
 def rooted_tree_iso(t1, t2):
+    """Checks if two rooted trees are isomorphic"""
+    if t1.get_size() != t2.get_size():
+        return False
     return t1.label() == t2.label()
 
-class RotatedTreeTest(unittest.TestCase):
+
+class RootedTreeTest(unittest.TestCase):
+    """Simple tests for tree"""
     def setUp(self):
         self.testTree = RootedTree('ROOT', {
             'ROOT': ['L', 'L'],
@@ -199,7 +214,8 @@ class RotatedTreeTest(unittest.TestCase):
         self.assertEqual(self.testTree.get_size(), 7)
 
 
-class IsomorphismAlgorithmTest(unittest.TestCase):
+class RootedTreesIsomorphismAlgorithmTest(unittest.TestCase):
+    """Tests for rooted trees isomorpism algorithms"""
     def testOrderedRootedTreeIsomorphism(self):
         test = RootedTree('R', {
             'R': ['A', 'B'],
@@ -259,43 +275,280 @@ class IsomorphismAlgorithmTest(unittest.TestCase):
         self.assertFalse(rooted_tree_iso(test, noniso))
 
 
+class Tree:
+    """A class for simple undirected tree."""
 
-if __name__ == "__main__":
-    # unittest.main(exit=False)
+    def __init__(self, V=set(), E=set()):
+        self.G = dict((v, set()) for v in V)
+        for e in E:
+            u = e[0]
+            w = e[1]
+            self.G[u].add(w)
+            self.G[w].add(u)
 
-    # y = [1,[2],3]
-    # x = [[item] if isinstance(item, int) else item for item in y]
-    # print(x)
-    # print( isinstance([1], int) )
-    #
-    # exit()
+    def vertices(self):
+        return set(self.G.keys())
 
-    # test = RootedTree('r', {
-    #     'r': ['L', 'R'],
-    #     'L': ['l1', 'l2', 'l3'],
-    #     'R': ['r1', 'r2', 'r3'],
-    #     'r2': ['a', 'b'],
-    #     'r3': ['c', 'd']
-    # })
+    def edges(self):
+        return set([(u, v) for u in self.G.keys() for v in self.G[u] if u < v])
 
-    test = RootedTree('R', {
-        'R': ['A', 'c', 'B'],
+    def order(self):
+        return len(self.vertices())
+
+    def size(self):
+        return len(self.edges())
+
+    def neighbors(self, v):
+        return self.G[v]
+
+    def deg(self, v):
+        return len(self.G[v])
+
+    def paths(self, init_vertex):
+        """Returns paths between init vertex and all others"""
+        path = {node: None for node in self.vertices()}
+        q = Queue()
+        q.put(init_vertex)
+        path[init_vertex] = [init_vertex]
+
+        while not q.empty():
+            node = q.get()
+            for v in self.neighbors(node):
+                if path[v] is None:
+                    path[v] = path[node] + [v]
+                    q.put(v)
+        return path
+
+    def center(self):
+        """Returns center of graph, as one or two values"""
+        import random
+        some_node = random.choice(list(self.vertices()))
+        #print("some node", some_node)
+        paths = self.paths(some_node)
+        #print("paths", paths)
+        farthest_node = max(paths, key=lambda k: len(paths[k]))
+        #print("farthest_node ", farthest_node)
+        longest_path = max(self.paths(farthest_node).values(), key=len)
+        #print("longest_path ", longest_path )
+
+        size = len(longest_path)
+        if size % 2 == 0:
+            return [longest_path[size // 2], longest_path[size // 2 - 1]]
+        else:
+            return [longest_path[(size - 1) // 2]]
+
+    def rooted_tree(self, root):
+        """Produces rooted tree rooted in root vertex"""
+        structure = dict()
+
+        visited = {node: False for node in self.vertices()}
+        q = Queue()
+        q.put(root)
+        visited[root] = True
+        while not q.empty():
+            node = q.get()
+            structure[node] = [v for v in self.neighbors(node) if visited[v] == False]
+            for v in self.neighbors(node):
+                if not visited[v]:
+                    visited[v] = True
+                    q.put(v)
+
+        return RootedTree(root, structure)
+
+    def render(self, title="Tree"):
+        dot = "graph " + title.replace(" ", "") + " { \n forcelabels=true; \n"
+
+        for u,v in self.edges():
+            dot += "\t" + u + " -- " + v + ";\n"
+
+        dot += "\tlabelloc=\"t\"; \n\tlabel=\"" + title + "\"; \n } "
+
+
+        src = Source(dot)
+        display(src)
+
+
+
+def unrooted_tree_iso(t1, t2):
+    """Checks if two trees are isomorphic"""
+    if t1.size() != t2.size():
+        return False
+    c1 = t1.center()
+    c2 = t2.center()
+    if len(c1) == len(c2):
+        if len(c1) == 1:
+            return rooted_tree_iso(t1.rooted_tree(c1[0]), t2.rooted_tree(c2[0]))
+        if len(c2) == 2:
+            return rooted_tree_iso(t1.rooted_tree(c1[0]), t2.rooted_tree(c2[0])) or rooted_tree_iso(
+                t1.rooted_tree(c1[1]), t2.rooted_tree(c2[0]))
+    else:
+        return False
+
+
+
+def show_ort(case):
+
+    t1 = RootedTree('R', {
+        'R': ['A', 'B'],
         'A': ['AX', 'AY'],
         'B': ['BX', 'BY', 'BZ'],
         'BZ': ['1', '2', '3', '4', '5', '6']
     })
 
-    iso = RootedTree('r', {
+    t2 = RootedTree('r', {
+        'r': ['L', 'R'],
+        'L': ['LL', 'LR'],
+        'R': ['RL', 'RM', 'RR'],
+        'RR': ['a', 'b', 'c', 'd', 'e', 's']
+    })
+
+    t3 = RootedTree('r', {
         'r': ['L', 'C', 'R'],
         'L': ['LL', 'LR'],
         'R': ['RL', 'RM', 'RR'],
-        'RL': ['a', 'b', 'c', 'd', 'e', 's']
+        'RR': ['a', 'b', 'c', 'd', 'e', 's']
     })
 
-    test.render()
-    iso.render()
-    print('test', test.label())
-    print('iso', iso.label())
+    t4 = RootedTree('r', {
+        'r': ['L', 'R'],
+        'L': ['LL', 'LR'],
+        'R': ['RL', 'RM', 'RR'],
+        'RM': ['a', 'b', 'c', 'd', 'e', 's']
+    })
 
-    test.render(labeled=True)
-    iso.render(labeled=True)
+
+    t1.render("T1")
+    t2.render("T2")
+    t3.render("T3")
+    t4.render("T4")
+
+
+    if case == 1:
+        t1.render("T1")
+        t2.render("T2")
+        print("Are trees T1 and T2 isomorphic?\n",  ordered_rooted_tree_iso(t1, t2))
+
+    if case == 2:
+        t1.render("T1")
+        t3.render("T3")
+        print("Are trees T1 and T3 isomorphic?\n",  ordered_rooted_tree_iso(t1, t3))
+
+    if case == 3:
+        t1.render("T1")
+        t4.render("T4")
+        print("Are trees T1 and T4 isomorphic?\n",  ordered_rooted_tree_iso(t1, t4))
+
+
+
+def show_rt(case):
+    t1 = RootedTree('R', {
+        'R': ['A', 'B'],
+        'A': ['AX', 'AY'],
+        'B': ['BX', 'BY', 'BZ'],
+        'BZ': ['1', '2', '3', '4', '5', '6']
+    })
+
+    t2 = RootedTree('r', {
+        'r': ['L', 'R'],
+        'L': ['LL', 'LR'],
+        'R': ['RL', 'RM', 'RR'],
+        'RR': ['a', 'b', 'c', 'd', 'e', 's']
+    })
+
+    t3 = RootedTree('r', {
+        'r': ['L', 'C', 'R'],
+        'L': ['LL', 'LR'],
+        'R': ['RL', 'RM', 'RR'],
+        'RR': ['a', 'b', 'c', 'd', 'e', 's']
+    })
+
+    t4 = RootedTree('r', {
+        'r': ['L', 'R'],
+        'L': ['LL', 'LR'],
+        'R': ['RL', 'RM', 'RR'],
+        'RM': ['a', 'b', 'c', 'd', 'e', 's']
+    })
+
+
+    if case == 1:
+        t1.render("T1", True)
+        t2.render("T2", True)
+        print("Are trees T1 and T2 isomorphic?\n",  rooted_tree_iso(t1, t2))
+
+    if case == 2:
+        t1.render("T1", True)
+        t3.render("T3", True)
+        print("Are trees T1 and T3 isomorphic?\n",  rooted_tree_iso(t1, t3))
+
+    if case == 3:
+        t1.render("T1", True)
+        t4.render("T4", True)
+        print("Are trees T1 and T4 isomorphic?\n",  rooted_tree_iso(t1, t4))
+
+def show_t(case):
+
+    V = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}
+    E1 = {('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('d', 'f'), ('b', 'h'), ('b', 'g',)}
+    E2 = {('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('e', 'f'), ('f', 'g'), ('g', 'h',)}
+    E3 = {('a', 'b'), ('c', 'b'), ('b', 'd'), ('d', 'e'), ('e', 'f'), ('e', 'h'), ('e', 'g',)}
+    E4 = {('a', 'b'), ('a', 'c'), ('a', 'd'), ('a', 'e'), ('a', 'f'), ('a', 'g'), ('a', 'h',)}
+
+    g1 = Tree(V, E1)
+    g2 = Tree(V, E2)
+    g3 = Tree(V, E3)
+    g4 = Tree(V, E4)
+
+    g1.render("G1")
+    g2.render("G2")
+    g3.render("G3")
+    g4.render("G4")
+
+    if case == 1:
+        g1.render("G1")
+        g2.render("G2")
+        print("Are trees G1 and G2 isomorphic?\n",  unrooted_tree_iso(g1, g2))
+        g1.rooted_tree(g1.center()[0]).render("rootedG1")
+        g2.rooted_tree(g2.center()[0]).render("rootedG2")
+    if case == 2:
+        g1.render("G1")
+        g3.render("G3")
+        print("Are trees G1 and G3 isomorphic?\n",  unrooted_tree_iso(g1, g3))
+        g1.rooted_tree(g1.center()[0]).render("rootedG1")
+        g3.rooted_tree(g3.center()[0]).render("rootedG3")
+    if case == 3:
+        g1.render("G1")
+        g4.render("G4")
+        print("Are trees G1 and G4 isomorphic?\n",  unrooted_tree_iso(g1, g4))
+        g1.rooted_tree(g1.center()[0]).render("rootedG1")
+        g4.rooted_tree(g4.center()[0]).render("rootedG4")
+
+def show_label():
+    t1 = RootedTree('R', {
+        'R': ['A', 'B'],
+        'A': ['AX', 'AY'],
+        'B': ['BX', 'BY', 'BZ'],
+        'BZ': ['1', '2', '3', '4', '5', '6']
+    })
+
+    t1.render("T", labeled=False)
+    t1.render("LabeledT", labeled=True)
+
+def run():
+
+    show_ort(1)
+    show_ort(2)
+    show_ort(3)
+
+    show_rt(1)
+    show_rt(2)
+    show_rt(3)
+
+    show_t(1)
+    show_t(2)
+    show_t(3)
+
+if __name__ == "__main__":
+    print("Welcome in interactive demonstration of Tree Isomorphism Problem \n ")
+    run()
+    # %%javascript
+    # IPython.OutputArea.auto_scroll_threshold = 9999;
