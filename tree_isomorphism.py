@@ -388,6 +388,9 @@ def unrooted_tree_iso(t1, t2):
 
 def show_ort(case):
 
+    print("Ordered Rooted Tree Examples\n")
+
+
     t1 = RootedTree('R', {
         'R': ['A', 'B'],
         'A': ['AX', 'AY'],
@@ -417,30 +420,39 @@ def show_ort(case):
     })
 
 
-    t1.render("T1")
-    t2.render("T2")
-    t3.render("T3")
-    t4.render("T4")
+    #t1.render("T1")
+    #t2.render("T2")
+    #t3.render("T3")
+    #t4.render("T4")
 
 
     if case == 1:
+        print("Are trees T1 and T2 isomorphic?\n")
         t1.render("T1")
         t2.render("T2")
-        print("Are trees T1 and T2 isomorphic?\n",  ordered_rooted_tree_iso(t1, t2))
+        print("\n\n\n")
+        print(ordered_rooted_tree_iso(t1, t2))
 
     if case == 2:
+        print("Are trees T1 and T3 isomorphic?\n")
         t1.render("T1")
         t3.render("T3")
-        print("Are trees T1 and T3 isomorphic?\n",  ordered_rooted_tree_iso(t1, t3))
+        print("\n\n\n")
+        print(ordered_rooted_tree_iso(t1, t3))
 
     if case == 3:
+        print("Are trees T1 and T4 isomorphic?\n")
         t1.render("T1")
         t4.render("T4")
+        print("\n\n\n")
         print("Are trees T1 and T4 isomorphic?\n",  ordered_rooted_tree_iso(t1, t4))
 
 
 
 def show_rt(case):
+    print("Rooted Tree Examples\n")
+
+
     t1 = RootedTree('R', {
         'R': ['A', 'B'],
         'A': ['AX', 'AY'],
@@ -471,21 +483,34 @@ def show_rt(case):
 
 
     if case == 1:
+        print("Are trees T1 and T2 isomorphic?\n")
+        t1.render("T1")
+        t2.render("T2")
+        print("\n\n\n")
+        print(rooted_tree_iso(t1, t2))
         t1.render("T1", True)
         t2.render("T2", True)
-        print("Are trees T1 and T2 isomorphic?\n",  rooted_tree_iso(t1, t2))
-
     if case == 2:
+        print("Are trees T1 and T3 isomorphic?\n")
+        t1.render("T1")
+        t3.render("T3")
+        print("\n\n\n")
+        print(rooted_tree_iso(t1, t3))
         t1.render("T1", True)
         t3.render("T3", True)
-        print("Are trees T1 and T3 isomorphic?\n",  rooted_tree_iso(t1, t3))
+
 
     if case == 3:
+        print("Are trees T1 and T4 isomorphic?\n")
+        t1.render("T1")
+        t4.render("T4")
+        print("\n\n\n")
+        print(rooted_tree_iso(t1, t4))
         t1.render("T1", True)
         t4.render("T4", True)
-        print("Are trees T1 and T4 isomorphic?\n",  rooted_tree_iso(t1, t4))
 
 def show_t(case):
+    print("Ordinary Tree Examples\n")
 
     V = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}
     E1 = {('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('d', 'f'), ('b', 'h'), ('b', 'g',)}
@@ -498,27 +523,33 @@ def show_t(case):
     g3 = Tree(V, E3)
     g4 = Tree(V, E4)
 
-    g1.render("G1")
-    g2.render("G2")
-    g3.render("G3")
-    g4.render("G4")
+    #g1.render("G1")
+    #g2.render("G2")
+    #g3.render("G3")
+    #g4.render("G4")
 
     if case == 1:
+        print("Are trees G1 and G2 isomorphic?\n\n")
         g1.render("G1")
         g2.render("G2")
-        print("Are trees G1 and G2 isomorphic?\n",  unrooted_tree_iso(g1, g2))
+        print("\n\n\n")
+        print(unrooted_tree_iso(g1, g2))
         g1.rooted_tree(g1.center()[0]).render("rootedG1")
         g2.rooted_tree(g2.center()[0]).render("rootedG2")
     if case == 2:
+        print("Are trees G1 and G3 isomorphic?\n")
         g1.render("G1")
         g3.render("G3")
-        print("Are trees G1 and G3 isomorphic?\n",  unrooted_tree_iso(g1, g3))
+        print("\n\n\n")
+        print(unrooted_tree_iso(g1, g3))
         g1.rooted_tree(g1.center()[0]).render("rootedG1")
         g3.rooted_tree(g3.center()[0]).render("rootedG3")
     if case == 3:
+        print("Are trees G1 and G4 isomorphic?\n")
         g1.render("G1")
         g4.render("G4")
-        print("Are trees G1 and G4 isomorphic?\n",  unrooted_tree_iso(g1, g4))
+        print("\n\n\n")
+        print(unrooted_tree_iso(g1, g4))
         g1.rooted_tree(g1.center()[0]).render("rootedG1")
         g4.rooted_tree(g4.center()[0]).render("rootedG4")
 
@@ -534,21 +565,27 @@ def show_label():
     t1.render("LabeledT", labeled=True)
 
 def run():
-
     show_ort(1)
+    print("\n\n\n\n\n\n\n\n\n")
     show_ort(2)
+    print("\n\n\n\n\n\n\n\n\n")
     show_ort(3)
-
+    print("\n\n\n\n\n\n\n\n\n")
     show_rt(1)
+    print("\n\n\n\n\n\n\n\n\n")
     show_rt(2)
+    print("\n\n\n\n\n\n\n\n\n")
     show_rt(3)
-
+    print("\n\n\n\n\n\n\n\n\n")
     show_t(1)
+    print("\n\n\n\n\n\n\n\n\n")
     show_t(2)
+    print("\n\n\n\n\n\n\n\n\n")
     show_t(3)
+    print("\n\n\n\n\n\n\n\n\n")
 
 if __name__ == "__main__":
     print("Welcome in interactive demonstration of Tree Isomorphism Problem \n ")
-    run()
+    # run()
     # %%javascript
     # IPython.OutputArea.auto_scroll_threshold = 9999;
